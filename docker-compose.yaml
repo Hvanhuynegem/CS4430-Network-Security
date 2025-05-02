@@ -1,0 +1,26 @@
+# version: "3.9"
+
+services:
+  attacker:
+    container_name: host01
+    hostname: host01
+    image: ubuntu
+    command: tail -F anything
+    networks:
+      home_net:
+        ipv4_address: 192.168.124.10
+  defender:
+    container_name: host02
+    hostname: host02
+    image: ubuntu
+    command: tail -F anything
+    networks:
+      home_net:
+        ipv4_address: 192.168.124.20
+networks:
+  home_net:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 192.168.124.0/24
+        gateway: 192.168.124.1

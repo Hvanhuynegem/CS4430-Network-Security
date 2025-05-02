@@ -1,0 +1,31 @@
+services:
+  host1:
+    container_name: scapy_lab_host1
+    hostname: host1
+    image: debian:bookworm
+    command: tail -F anything
+    networks:
+      lab_net:
+        ipv4_address: 192.168.124.10
+  attacker:
+    container_name: scapy_lab_attacker
+    hostname: attacker
+    build: ./attacker
+    command: tail -F anything
+    networks:
+      lab_net:
+        ipv4_address: 192.168.124.20
+    working_dir: /solution
+    volumes:
+      - type: bind
+        source: ./solution
+        target: /solution
+
+networks:
+  lab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.124.0/24
+    driver_opts:
+      com.docker.network.bridge.name: scapy_lab
