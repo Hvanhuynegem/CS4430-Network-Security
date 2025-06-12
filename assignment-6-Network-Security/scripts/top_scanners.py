@@ -21,20 +21,35 @@ os.makedirs(figures_folder, exist_ok=True)
 ip_counter = Counter()
 total_packets = 0
 
+# Count source IPs
+ip_counter = Counter()
+total_packets = 0
+
 for file in pcap_files:
     print(f"Processing: {file}")
     try:
-        # Runs tshark script in terminal using the subprocess package
-        output = subprocess.check_output([
-            "tshark", "-r", file, "-T", "fields", "-e", "ip.src"
+        # 1. TCP SYN packets (without ACK)
+        output_tcp = subprocess.check_output([
+            "tshark", "-r", file, "-Y", "tcp.flags.syn==1 and tcp.flags.ack==0",
+            "-T", "fields", "-e", "ip.src"
         ], stderr=subprocess.DEVNULL).decode("utf-8")
+        ips_tcp = [ip for ip in output_tcp.strip().split("\n") if ip]
 
-        lines = output.strip().split("\n")
-        ips = [ip for ip in lines if ip]
-        ip_counter.update(ips)
-        total_packets += len(ips)
+        # 2. UDP packets
+        output_udp = subprocess.check_output([
+            "tshark", "-r", file, "-Y", "udp",
+            "-T", "fields", "-e", "ip.src"
+        ], stderr=subprocess.DEVNULL).decode("utf-8")
+        ips_udp = [ip for ip in output_udp.strip().split("\n") if ip]
+
+        # Combine and count
+        ip_counter.update(ips_tcp)
+        ip_counter.update(ips_udp)
+        total_packets += len(ips_tcp) + len(ips_udp)
+
     except subprocess.CalledProcessError as e:
         print(f"tshark error for {file}: {e}")
+
 
 # Output top 10 found IPs.
 print("\nTop 10 Scanners:")

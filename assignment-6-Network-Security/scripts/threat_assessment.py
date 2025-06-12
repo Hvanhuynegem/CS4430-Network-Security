@@ -1,7 +1,8 @@
 import subprocess
 import glob
 import os
-import geoip2.database
+from collections import Counter
+import matplotlib.pyplot as plt
 
 # Config
 target_ip = "185.242.226.50"
@@ -9,14 +10,14 @@ target_ip = "185.242.226.50"
 pcap_folder = os.path.join(os.path.dirname(__file__), "..", "PCAPs")
 pcap_files = sorted(glob.glob(os.path.join(pcap_folder, "*")))
 
+port_counter = Counter()
 dst_ips = set()
-dst_ports = set()
 packet_count = 0
 
 for file in pcap_files:
     print(f"Processing {file}")
     try:
-        # TCP SYN packets sent by heavy hitter
+        # TCP SYN packets
         tcp_out = subprocess.check_output([
             "tshark", "-r", file,
             "-Y", f"ip.src == {target_ip} and tcp.flags.syn==1 and tcp.flags.ack==0",
@@ -30,10 +31,11 @@ for file in pcap_files:
             if len(parts) >= 1 and parts[0]:
                 dst_ips.add(parts[0])
             if len(parts) >= 2 and parts[1].isdigit():
-                dst_ports.add(int(parts[1]))
+                port = int(parts[1])
+                port_counter[port] += 1
             packet_count += 1
 
-        # UDP packets sent by heavy hitter
+        # UDP packets
         udp_out = subprocess.check_output([
             "tshark", "-r", file,
             "-Y", f"ip.src == {target_ip} and udp",
@@ -47,32 +49,28 @@ for file in pcap_files:
             if len(parts) >= 1 and parts[0]:
                 dst_ips.add(parts[0])
             if len(parts) >= 2 and parts[1].isdigit():
-                dst_ports.add(int(parts[1]))
+                port = int(parts[1])
+                port_counter[port] += 1
             packet_count += 1
 
     except subprocess.CalledProcessError as e:
         print(f"Error reading {file}: {e}")
 
-# GeoIP lookup
-geo_folder = os.path.join(os.path.dirname(__file__), "..", "GeoLite2-City")
-mmdb_files = glob.glob(os.path.join(geo_folder, "**", "*.mmdb"), recursive=True)
-
-if mmdb_files:
-    geoip_db = mmdb_files[0]
-else:
-    raise FileNotFoundError("GeoLite2-City.mmdb not found in GeoLite2-City folder.")
-
-country = "Unknown"
-try:
-    with geoip2.database.Reader(geoip_db) as reader:
-        response = reader.city(target_ip)
-        country = response.country.name
-except Exception as e:
-    print("GeoIP lookup failed:", e)
-
 # Print summary
-print(f"\nHeavy Hitter IP: {target_ip}")
+print(f"\nIP: {target_ip}")
 print(f"Total Packets: {packet_count}")
 print(f"Unique Destination IPs: {len(dst_ips)}")
-print(f"Unique Destination Ports: {len(dst_ports)}")
-print(f"Country: {country}")
+print(f"Unique Destination Ports: {len(port_counter)}")
+
+# Plot: Packet count per port
+plt.figure(figsize=(8, 5))
+ports = list(port_counter.keys())
+counts = list(port_counter.values())
+plt.bar(ports, counts, color='darkred')
+plt.xlabel("Destination Port")
+plt.ylabel("Packet Count")
+plt.title(f"Packets per Port for Heavy Hitter {target_ip}")
+plt.xticks(ports)
+plt.tight_layout()
+plt.savefig("mass_scanner_port_distribution.png", dpi=300)
+plt.show()

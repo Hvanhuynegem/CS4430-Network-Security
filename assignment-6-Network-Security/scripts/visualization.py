@@ -5,6 +5,8 @@ import os
 import matplotlib.pyplot as plt
 from datetime import datetime 
 from datetime import timezone
+import matplotlib.dates as mdates
+
 
 
 
@@ -84,16 +86,21 @@ if sorted_bins:
     times, counts = zip(*sorted_bins)
 
     plt.figure(figsize=(10, 5))
-    plt.plot(times, counts, marker='o')
+    plt.bar(times, counts, width=300 / (24*60*60), align='center')  # 300 seconds = 5 minutes in days
+
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
+
     plt.xticks(rotation=45)
     plt.title("Packet Count Over Time (5-Minute Bins)")
-    plt.xlabel("Time")
+    plt.xlabel("Time (UTC)")
     plt.ylabel("Packet Count")
     plt.tight_layout()
     plt.savefig(os.path.join(figures_folder, "packet_time_series.png"))
     plt.show()
 else:
-    print("⚠️ No time bin data available for time series plot.")
+    print("No time bin data available for time series plot.")
+
 
 
 

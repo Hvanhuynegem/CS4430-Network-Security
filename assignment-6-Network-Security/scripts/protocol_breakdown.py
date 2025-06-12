@@ -28,7 +28,7 @@ for file in pcap_files:
     try:
         # Runs tshark script in terminal using the subprocess package for TCP packets
         tcp_out = subprocess.check_output([
-            "tshark", "-r", file, "-Y", "tcp", "-T", "fields", "-e", "tcp.dstport"
+            "tshark", "-r", file, "-Y", "tcp.flags.syn==1 and tcp.flags.ack==0", "-T", "fields", "-e", "tcp.dstport"
         ], stderr=subprocess.DEVNULL).decode("utf-8")
 
         tcp_lines = tcp_out.strip().split("\n")
