@@ -1,0 +1,14 @@
+# Ignore large PCAP trace files
+assignment-6-Network-Security/PCAPs/trace1_00000_20240222190416
+assignment-6-Network-Security/PCAPs/trace1_00001_20240222190651
+assignment-6-Network-Security/PCAPs/trace1_00002_20240222190931
+assignment-6-Network-Security/PCAPs/trace1_00003_20240222191206
+assignment-6-Network-Security/PCAPs/trace1_00004_20240222191515
+assignment-6-Network-Security/PCAPs/trace2_00000_20240222191916
+assignment-6-Network-Security/PCAPs/trace2_00001_20240222192217
+assignment-6-Network-Security/PCAPs/trace2_00002_20240222192517
+assignment-6-Network-Security/PCAPs/trace2_00003_20240222192816
+assignment-6-Network-Security/PCAPs/trace2_00004_20240222193117
+
+# Ignore large GeoLite2 database
+assignment-6-Network-Security/GeoLite2-City/GeoLite2-City.mmdb
