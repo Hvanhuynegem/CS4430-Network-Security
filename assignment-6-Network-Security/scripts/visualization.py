@@ -8,8 +8,6 @@ from datetime import timezone
 import matplotlib.dates as mdates
 
 
-
-
 # Locate 12 PCAP files in relative directory
 pcap_folder = os.path.join(os.path.dirname(__file__), "..", "PCAPs")
 
