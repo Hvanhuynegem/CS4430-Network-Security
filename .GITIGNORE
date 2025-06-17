@@ -1,0 +1,5 @@
+# Ignore large PCAP trace files
+assignment-7-Network-Security/dataset/
+
+# Ignore large GeoLite2 database
+assignment-6-Network-Security/GeoLite2-City/GeoLite2-City.mmdb
